@@ -1,16 +1,6 @@
-import { ClimateCardConfig } from '../types';
-import DeviceManager, { DOMAINS } from '../core/DeviceManager';
+// ClimateDeviceManager.ts
 
-export enum CLIMATE_ATTRS {
-  'CURRENT_TEMPERATUE' = 'current_temperature',
-  'CURRENT_HUMIDITY' = 'current_humidity',
-  'TEMPERATUE' = 'temperature',
-  'NAME' = 'friendly_name',
-  'HVAC_ACTION' = 'hvac_action',
-  'HVAC_MODES' = 'hvac_modes',
-  'MIN_TEMP' = 'min_temp',
-  'MAX_TEMP' = 'max_temp',
-}
+import { HomeAssistant, HassEntity } from 'custom-card-helpers';
 
 export enum HVAC_ACTION {
   OFF = 'off',
@@ -31,73 +21,83 @@ export enum HVAC_MODE {
   FAN_ONLY = 'fan_only',
 }
 
-enum CLIMATE_SERVICES {
-  TURN_OFF = 'turn_off',
-  SET_HVAC_MODE = 'set_hvac_mode',
-  SET_TEMPERATURE = 'set_temperature',
-}
+export class ClimateDeviceManager {
+  private _hass: HomeAssistant;
+  private _entityId: string;
+  public stateObj: HassEntity;
 
-class ClimateDeviceManager extends DeviceManager<ClimateCardConfig> {
-  private hvacModes = Array<HVAC_MODE>(HVAC_MODE.OFF);
-
-  constructor() {
-    super(DOMAINS.CLIMATE);
+  constructor(hass: HomeAssistant, entityId: string) {
+    this._hass = hass;
+    this._entityId = entityId;
+    this.stateObj = hass.states[entityId];
   }
 
-  protected onInitialzied(): void {
-    super.onInitialzied();
-    this.hvacModes = Array<HVAC_MODE>(HVAC_MODE.OFF);
-    this.getAttr(CLIMATE_ATTRS.HVAC_MODES)
-      .sort()
-      .forEach(element => {
-        if (element != 'off') this.hvacModes.push(element as HVAC_MODE);
-      });
-    this.hvacModes.reverse();
+  public updateState(hass: HomeAssistant) {
+    this._hass = hass;
+    this.stateObj = hass.states[this._entityId];
   }
 
-  public getAttr(attr: CLIMATE_ATTRS): any {
-    return super.getAttr(attr);
-  }
-
-  public hvacMode(hvacMode: HVAC_MODE): void {
-    if (hvacMode === HVAC_MODE.OFF) {
-      super.callService(CLIMATE_SERVICES.TURN_OFF);
-    } else {
-      super.callService(CLIMATE_SERVICES.SET_HVAC_MODE, { hvac_mode: hvacMode });
+  public get hvacAction(): HVAC_ACTION {
+    const action = this.stateObj.attributes.hvac_action as HVAC_ACTION;
+    if (!Object.values(HVAC_ACTION).includes(action)) {
+      return HVAC_ACTION.IDLE; // Valeur par défaut si l'action est inconnue
     }
+    return action;
   }
 
-  public isMode(mode: HVAC_MODE): boolean {
-    return super.getState() === mode;
+  public get hvacMode(): HVAC_MODE {
+    const mode = this.stateObj.state as HVAC_MODE;
+    if (!Object.values(HVAC_MODE).includes(mode)) {
+      return HVAC_MODE.OFF; // Valeur par défaut si le mode est inconnu
+    }
+    return mode;
   }
 
-  public isAction(action: HVAC_ACTION): boolean {
-    return super.getAttr(CLIMATE_ATTRS.HVAC_ACTION) === action;
+  public get temperature(): number {
+    return this.stateObj.attributes.temperature;
   }
 
-  public getHvacModes(): Array<HVAC_MODE> {
-    return [...this.hvacModes];
+  public get currentTemperature(): number {
+    return this.stateObj.attributes.current_temperature;
   }
 
-  public setTargetTemp(temperature: number): void {
-    this.callService(CLIMATE_SERVICES.SET_TEMPERATURE, { temperature });
+  public get minTemperature(): number {
+    return this.stateObj.attributes.min_temp;
   }
 
-  public temperatureRange(): ClimateTempRange {
-    const min = super.getAttr(CLIMATE_ATTRS.MIN_TEMP);
-    const max = super.getAttr(CLIMATE_ATTRS.MAX_TEMP);
-    return {
-      difference: max - min,
-      min,
-      max,
-    };
+  public get maxTemperature(): number {
+    return this.stateObj.attributes.max_temp;
   }
+
+  public get targetTemperatureStep(): number {
+    return this.stateObj.attributes.target_temp_step || 0.5;
+  }
+
+  public setHvacMode(mode: HVAC_MODE) {
+    this._hass.callService('climate', 'set_hvac_mode', {
+      entity_id: this._entityId,
+      hvac_mode: mode,
+    });
+  }
+
+  public setTemperature(temperature: number) {
+    this._hass.callService('climate', 'set_temperature', {
+      entity_id: this._entityId,
+      temperature: temperature,
+    });
+  }
+
+  public turnOn() {
+    this._hass.callService('climate', 'turn_on', {
+      entity_id: this._entityId,
+    });
+  }
+
+  public turnOff() {
+    this._hass.callService('climate', 'turn_off', {
+      entity_id: this._entityId,
+    });
+  }
+
+  // Ajoutez ici d'autres méthodes ou propriétés si nécessaire...
 }
-
-export interface ClimateTempRange {
-  difference: number;
-  min: number;
-  max: number;
-}
-
-export default ClimateDeviceManager;
