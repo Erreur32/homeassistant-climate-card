@@ -12,16 +12,23 @@ export enum CLIMATE_ATTRS {
   'MAX_TEMP' = 'max_temp',
 }
 
-export enum HVAC_MODE {
-  'HEAT' = 'heat',
-  'COOL' = 'cool',
-  'OFF' = 'off',
+export enum HVAC_ACTION {
+  OFF = 'off',
+  HEATING = 'heating',
+  COOLING = 'cooling',
+  DRYING = 'drying',
+  IDLE = 'idle',
+  FAN = 'fan',
 }
 
-export enum HVAC_ACTION {
-  'HEAT' = 'heating',
-  'COOL' = 'cooling',
-  'IDLE' = 'idle',
+export enum HVAC_MODE {
+  OFF = 'off',
+  HEAT = 'heat',
+  COOL = 'cool',
+  HEAT_COOL = 'heat_cool',
+  AUTO = 'auto',
+  DRY = 'dry',
+  FAN_ONLY = 'fan_only',
 }
 
 enum CLIMATE_SERVICES {
