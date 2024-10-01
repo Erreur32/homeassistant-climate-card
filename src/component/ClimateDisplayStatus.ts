@@ -1,10 +1,13 @@
+// ClimateDisplayStatus.ts
+
 import { LitElement, html, css, property } from 'lit-element';
 import { HVAC_ACTION, HVAC_MODE } from '../climate/ClimateDeviceManager';
 
 class ClimateDisplayStatus extends LitElement {
-  @property()
+  @property({ type: String })
   public hvacMode: HVAC_MODE = HVAC_MODE.OFF;
-  @property()
+
+  @property({ type: String })
   public hvacAction: HVAC_ACTION = HVAC_ACTION.IDLE;
 
   constructor() {
@@ -27,16 +30,19 @@ class ClimateDisplayStatus extends LitElement {
     } else if (this.hvacAction === HVAC_ACTION.COOLING) {
       label = 'COOLING';
       icon = 'mdi:snowflake';
+    } else if (this.hvacAction === HVAC_ACTION.IDLE) {
+      // Optionnel : définir le label et l'icône lorsque le système est en veille
+      label = 'IDLE';
     }
 
     return html`
       <div
         class="climate-card-data ccd-state ${this.hvacMode}"
         style=${this.hvacAction === HVAC_ACTION.IDLE
-          ? 'margin: auto; opacity: 0.5'
+          ? 'margin: auto; opacity: 0.5;'
           : 'vertical-align: text-bottom;'}
       >
-        ${icon !== ''
+        ${icon
           ? html`<ha-icon icon="${icon}" style="vertical-align: text-bottom;"></ha-icon>`
           : ''}
         ${label}
