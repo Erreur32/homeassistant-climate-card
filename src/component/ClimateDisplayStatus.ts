@@ -12,37 +12,44 @@ class ClimateDisplayStatus extends LitElement {
   }
 
   render() {
-    let label = "";
-    let icon = "";
+    let label = '';
+    let icon = '';
 
-    if(this.hvacMode == HVAC_MODE.HEAT){
-        label = "WARM"
-    } else if(this.hvacMode == HVAC_MODE.COOL){
-        label = "COLD"
+    if (this.hvacMode === HVAC_MODE.HEAT) {
+      label = 'WARM';
+    } else if (this.hvacMode === HVAC_MODE.COOL) {
+      label = 'COLD';
     }
 
-    if(this.hvacAction == HVAC_ACTION.HEAT){
-        label = "HEATING"
-        icon = "mdi:fire"
-    } else if(this.hvacAction == HVAC_ACTION.COOL){
-        label = "COOLING"
-        icon = "mdi:snowflake"
+    if (this.hvacAction === HVAC_ACTION.HEATING) {
+      label = 'HEATING';
+      icon = 'mdi:fire';
+    } else if (this.hvacAction === HVAC_ACTION.COOLING) {
+      label = 'COOLING';
+      icon = 'mdi:snowflake';
     }
 
     return html`
-      <div class="climate-card-data ccd-state ${this.hvacMode}" style=${this.hvacAction == HVAC_ACTION.IDLE?"margin: auto; opacity: 0.5":"vertical-align: text-bottom;"}>
-        ${icon !=""?html`<ha-icon icon="${icon}" style="vertical-align: text-bottom;"></ha-icon>`:""}
+      <div
+        class="climate-card-data ccd-state ${this.hvacMode}"
+        style=${this.hvacAction === HVAC_ACTION.IDLE
+          ? 'margin: auto; opacity: 0.5'
+          : 'vertical-align: text-bottom;'}
+      >
+        ${icon !== ''
+          ? html`<ha-icon icon="${icon}" style="vertical-align: text-bottom;"></ha-icon>`
+          : ''}
         ${label}
       </div>
     `;
   }
+
   static get styles() {
-    return [
-      css`
+    return css`
       .climate-card-data {
-            position: absolute;
-            margin: auto;
-          }
+        position: absolute;
+        margin: auto;
+      }
       .climate-card-data.ccd-state {
         bottom: 21%;
         margin: auto;
@@ -58,9 +65,7 @@ class ClimateDisplayStatus extends LitElement {
       .climate-card-data.ccd-state.cool {
         color: var(--coolColor);
       }
-
-      `,
-    ];
+    `;
   }
 }
 
